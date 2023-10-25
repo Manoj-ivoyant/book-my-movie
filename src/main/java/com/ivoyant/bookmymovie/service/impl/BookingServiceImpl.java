@@ -39,7 +39,9 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     public ApiResponse bookTicket(Long walletId, String userName, BillingDto billingDto) {
         User user = userRepository.findByUserName(userName);
+        logger.warn("throws ResourceNotFound Exception if user is null");
         if (user == null) {
+            logger.error("ResourceNotFound exception is thrown ");
             throw new ResourceNotFound("user not found");
         }
         Wallet wallet = walletRepository.findById(walletId).orElseThrow(() -> new ResourceNotFound("wallet with id:" + walletId + " not found"));
@@ -50,11 +52,13 @@ public class BookingServiceImpl implements BookingService {
         Theatre theatre = theatreRepository.findByTheatreNameAndLocation(billingDto.getTheatreName(), billingDto.getLocation());
         boolean cond2 = theatreList.contains(theatre);
         if (cond2) {
-            if (movie == null || theatre == null) {
+            if (theatre == null) {
+                logger.error("ResourceNotFound exception is thrown due to no match for movie and theater");
                 throw new ResourceNotFound("movie or theatre not found");
             }
 
             if (!cond) {
+                logger.error("Resource not found exception due to wallet belongs to different users ");
                 throw new ResourceNotFound("wallet:" + walletId + " not for the user:" + userName);
             }
             Double price = movie.getPrice();
@@ -79,15 +83,19 @@ public class BookingServiceImpl implements BookingService {
                     theatreRepository.save(theatre);
                     bookingRepository.save(booking);
                 } else {
+                    logger.error("Exception due to insufficient balance");
                     throw new ResourceConflictExists("Insufficient balance");
                 }
 
             } else {
+                logger.error("Exception due to house full");
                 throw new ResourceConflictExists("house full");
             }
         } else {
+            logger.error("Exception due to movie not host in theatre");
             throw new ResourceConflictExists("movie not host in theatre selected");
         }
+        logger.info("ticket booked successfully");
         return new ApiResponse("booking successfully", HttpStatus.CREATED);
     }
 
@@ -102,8 +110,7 @@ public class BookingServiceImpl implements BookingService {
         if (bookings.isEmpty()) {
             throw new ResourceNotFound("No booked history for user :" + userName);
         }
-        List<BookingResponse> bookingResponses = bookings.stream().map(i -> BookingResponse.builder().movieName(i.getMovie().getMovieName()).userName(i.getUser().getUserName()).totalPrice(i.getTotalPrice()).noOfTickets(i.getNoOfTickets()).purchasedTime(i.getPurchasedTime()).theaterName(i.getTheaterName()).build()).toList();
-        return bookingResponses;
+        return bookings.stream().map(i -> BookingResponse.builder().movieName(i.getMovie().getMovieName()).userName(i.getUser().getUserName()).totalPrice(i.getTotalPrice()).noOfTickets(i.getNoOfTickets()).purchasedTime(i.getPurchasedTime()).theaterName(i.getTheaterName()).build()).toList();
     }
 
     @Override
@@ -117,7 +124,6 @@ public class BookingServiceImpl implements BookingService {
         if (bookings.isEmpty()) {
             throw new ResourceNotFound("No booked history for user :" + userName);
         }
-        List<BookingResponse> bookingResponses = bookings.stream().map(i -> BookingResponse.builder().movieName(i.getMovie().getMovieName()).userName(i.getUser().getUserName()).totalPrice(i.getTotalPrice()).noOfTickets(i.getNoOfTickets()).purchasedTime(i.getPurchasedTime()).build()).toList();
-        return bookingResponses;
+        return bookings.stream().map(i -> BookingResponse.builder().movieName(i.getMovie().getMovieName()).userName(i.getUser().getUserName()).totalPrice(i.getTotalPrice()).noOfTickets(i.getNoOfTickets()).purchasedTime(i.getPurchasedTime()).build()).toList();
     }
 }

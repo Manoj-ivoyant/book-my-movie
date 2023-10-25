@@ -4,7 +4,6 @@ import com.ivoyant.bookmymovie.dto.UserDto;
 import com.ivoyant.bookmymovie.dto.WalletDto;
 import com.ivoyant.bookmymovie.entity.User;
 import com.ivoyant.bookmymovie.exception.ResourceNotFound;
-import com.ivoyant.bookmymovie.repository.BookingRepository;
 import com.ivoyant.bookmymovie.repository.UserRepository;
 import com.ivoyant.bookmymovie.response.BookingResponse;
 import com.ivoyant.bookmymovie.response.UserHistoryResponse;
@@ -23,8 +22,6 @@ public class UserHistoryServiceImpl implements UserHistoryService {
     private static final Logger logger = LoggerFactory.getLogger(UserHistoryServiceImpl.class);
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private BookingRepository bookingRepository;
     @Autowired
     private BookingService bookingService;
 
